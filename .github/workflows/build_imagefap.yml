@@ -1,0 +1,42 @@
+name: ImageFap bauen
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'src/en/imagefap/**'
+      - '.github/workflows/build_imagefap.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 25
+          distribution: temurin
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Nur die ImageFap-Erweiterung laden
+        run: sed -i 's/^loadAllIndividualExtensions()/loadIndividualExtension("en", "imagefap")/' settings.gradle.kts
+
+      - name: Icon ergänzen, falls keins da ist
+        run: |
+          if [ ! -d src/en/imagefap/res ]; then
+            cp -r src/all/ahrigallery/res src/en/imagefap/res
+          fi
+
+      - name: APK bauen
+        run: ./gradlew :src:en:imagefap:assembleRelease
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: imagefap-apk
+          path: src/en/imagefap/build/outputs/apk/release/*.apk
