@@ -28,8 +28,7 @@ import kotlin.time.Duration.Companion.seconds
 abstract class ImageFap : KeiSource() {
 
     // ImageFap bans IPs that request pages too quickly; images on the CDN are not limited
-    override fun OkHttpClient.Builder.configureClient(): OkHttpClient.Builder =
-        rateLimit(permits = 1, period = 1.seconds) { it.host == "www.imagefap.com" }
+    override fun OkHttpClient.Builder.configureClient(): OkHttpClient.Builder = rateLimit(permits = 1, period = 1.seconds) { it.host == "www.imagefap.com" }
 
     override val supportsLatest get() = false
 
@@ -52,8 +51,8 @@ abstract class ImageFap : KeiSource() {
     private fun listUrl(page: Int) = "$baseUrl/gallery.php".toHttpUrl().newBuilder()
         .addQueryParameter("page", page.toString())
 
-    private suspend fun getGalleryList(url: HttpUrl): MangasPage {
-        val document = fetchDocument(url.toString())
+    private suspend fun getGalleryList(pageUrl: HttpUrl): MangasPage {
+        val document = fetchDocument(pageUrl.toString())
         val seen = HashSet<String>()
         val mangas = document.select("a[href*=\"gallery.php?gid=\"]")
             .filter { it.selectFirst("img") == null && it.text().isNotBlank() }
