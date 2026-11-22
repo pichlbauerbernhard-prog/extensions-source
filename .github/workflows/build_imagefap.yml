@@ -33,6 +33,9 @@ jobs:
             cp -r src/all/ahrigallery/res src/en/imagefap/res
           fi
 
+      - name: Code formatieren
+        run: ./gradlew :src:en:imagefap:spotlessApply
+
       - name: APK bauen
         run: ./gradlew :src:en:imagefap:assembleRelease
 
